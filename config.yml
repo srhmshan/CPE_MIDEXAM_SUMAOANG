@@ -1,0 +1,83 @@
+---
+
+- hosts: all
+  become: true
+  pre_tasks:
+
+  - name: Installing dnf and epel-release
+    yum:
+      name:
+        - epel-release
+        - dnf
+    when: ansible_distribution == "CentOS"
+
+  - name: Update and upgrade remote CentOS server
+    dnf:
+      update_cache: yes
+      name:  "*"
+      state: latest
+    when: ansible_distribution == "CentOS"
+
+  - name: Installing installations dependencies
+    apt:
+      name:
+        - wget
+      state: latest
+    when: ansible_distribution == "Ubuntu"
+
+  - name: Dpkg fixing in Ubuntu Servers
+    shell: |
+      dpkg --configure -a
+    when: ansible_distribution == "Ubuntu"
+
+
+# ES Centos
+- hosts: es_centos
+  tags: es_centos, es_both
+  become: true
+  roles:
+    - es_centos
+
+# ES Ubuntu
+- hosts: es_ubuntu
+  tags: es_ubuntu, es_both
+  become: true
+  roles:
+    - es_ubuntu
+
+# Nagios Centos
+- hosts: nagios_centos
+  tags: nagios_centos
+  become: true
+  roles:
+    - nagios_centos
+
+
+# IGP (Influxdb, Grafana, Prometheus) Centos
+- hosts: igp_centos
+  tags: igp_centos, igp_both
+  become: true
+  roles:
+    - igp_centos
+
+# IGP (Influxdb, Grafana, Prometheus) Ubuntu
+- hosts: igp_ubuntu
+  tags: igp_ubuntu, igp_both
+  become: true
+  roles:
+    - igp_ubuntu
+
+
+# Lamp Stack (HTTPD + Php, Mariadb) Centos
+- hosts: ls_centos
+  tags: ls_centos, ls_both
+  become: true
+  roles:
+    - ls_centos
+
+# Lamp Stack (HTTPD + Php, Mariadb) Ubuntu
+- hosts: ls_ubuntu
+  tags: ls_ubuntu, ls_both
+  become: true
+  roles:
+    - ls_ubuntu

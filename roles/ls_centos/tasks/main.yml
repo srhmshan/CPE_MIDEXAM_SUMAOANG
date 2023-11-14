@@ -1,0 +1,28 @@
+---
+  - name: Installing Lamp Stack dependencies
+    dnf:
+      name:
+        - httpd
+        - mariadb-server
+        - mariadb
+        - php
+        - php-mysql
+      state: latest
+
+  - name: Opening needed ports for Lamp Stack
+    shell: |
+      sudo firewall-cmd --permanent --zone=public --add-service=http
+      sudo firewall-cmd --permanent --zone=public --add-service=https
+      sudo firewall-cmd --reload
+
+  - name: Starting Apache service
+    service:
+      name: httpd
+      state: started
+      enabled: true
+
+  - name: Starting MariaDB services
+    service:
+      name: mariadb
+      state: started
+      enabled: true

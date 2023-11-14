@@ -1,0 +1,78 @@
+---
+  - name: Add the InfluxDB executables to the PATH
+    become: yes
+    command: |
+      cd /tmp
+      wget https://dl.influxdata.com/influxdb/releases/influxdb2-2.4.0-linux-amd64.tar.gz
+      tar -xzvf influxdb2-2.4.0-linux-amd64.tar.gz
+      sudo cp influxdb2-2.4.0-linux-amd64/influxdb /usr/local/bin/
+
+  - name: Downloading Grafana package
+    get_url:
+      url: https://dl.grafana.com/enterprise/release/grafana-enterprise-9.2.2-1.x86_64.rpm
+      dest: /tmp/grafana-enterprise-9.2.2-1.x86_64.rpm
+
+  - name: Installing Grafana
+    yum:
+      name: /tmp/grafana-enterprise-9.2.2-1.x86_64.rpm
+
+  - name: Enabling Grafana service
+    service:
+      name: grafana-server
+      enabled: yes
+
+  - name: Modifying service file
+    tags: es_ubuntu
+    replace:
+      path: /usr/lib/systemd/system/grafana-server.service
+      regexp: "TimeoutStartSec=75"
+      replace: "TimeoutStartSec=500"
+
+  - name: Grafana service is started and enabled
+    service:
+      name: grafana-server
+      enabled: true
+      state: started
+
+  - name: Creating a directory for Prometheus package
+    tags: directory
+    file:
+      path: ~/prometheus
+      state: directory
+
+  - name: Downloading and extracting Prometheus
+    tags: source
+    unarchive:
+      src: https://github.com/prometheus/prometheus/releases/download/v2.39.1/prometheus-2.39.1.linux-amd64.tar.gz
+      dest: ~/prometheus
+      remote_src: yes
+      mode: 0777
+      owner: root
+      group: root
+
+  - name: Stopping the Prometheus service if exists
+    shell:
+      cmd: sudo systemctl stop prometheus >> /dev/null
+    ignore_errors: yes
+
+  - name: Adding the Prometheus executables to a PATH
+    tags: executables
+    shell: |
+      cd ~/prometheus/prometheus*
+      cp -r . /usr/local/bin/prometheus
+    ignore_errors: yes
+
+  - name: Copying the Prometheus service file
+    tags: servicefile
+    copy:
+      src: prometheus.service
+      dest: /etc/systemd/system/
+      owner: root
+      group: root
+      mode: 777
+
+  - name: Making sure that Prometheus service is started and enabled
+    service:
+      name: prometheus
+      state: restarted
+      enabled: true

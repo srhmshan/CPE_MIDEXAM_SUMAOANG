@@ -1,0 +1,16 @@
+---
+  - name: Installing dependencies
+    apt:
+      name:
+        - apache2
+        - mysql-server
+        - php
+        - libapache2-mod-php
+        - php-mysql
+      state: latest
+
+  - name: Starting the services
+    service:
+      name: apache2
+      state: started
+      enabled: true
