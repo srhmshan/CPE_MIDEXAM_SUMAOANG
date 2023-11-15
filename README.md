@@ -1,2 +1,0 @@
-# CPE_MIDEXAM_SUMAOANG
-Midterm Skill Exam in CPE232
